@@ -20,8 +20,6 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         [contenteditable]:focus { background: #f8fafc; outline: 2px solid #6366f1; border-radius: 4px; }
-        .toast-enter { transform: translateY(100%); opacity: 0; }
-        .toast-active { transform: translateY(0); opacity: 1; }
     </style>
 </head>
 <body class="bg-[#f8fafc] min-h-screen text-slate-900 selection:bg-indigo-100">
@@ -37,6 +35,9 @@
                 <p class="text-slate-500 mt-2 font-medium">Görselleri akıllı tablolara dönüştürün, düzenleyin ve dışa aktarın.</p>
             </div>
             <div id="actionHeader" class="hidden flex items-center gap-3">
+                <button id="openSettingsBtn" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors" title="Ayarlar">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </button>
                 <button id="resetBtn" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-red-600 transition-colors flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     Sıfırla
@@ -44,7 +45,7 @@
             </div>
         </header>
 
-        <!-- Initial State: Upload Section -->
+        <!-- Initial State -->
         <div id="uploadWrapper" class="space-y-8">
             <div id="uploadContainer" class="bg-white p-2 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 transition-all">
                 <div id="dropZone" class="border-2 border-dashed border-slate-200 rounded-[1.8rem] py-20 text-center cursor-pointer hover:border-indigo-400 hover:bg-slate-50 transition-all duration-300 group">
@@ -71,7 +72,7 @@
                             <span>Sihri Başlat</span>
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         </button>
-                        <p class="text-xs text-slate-400 font-medium uppercase tracking-widest">Yapay Zeka Hazır</p>
+                        <p class="text-xs text-slate-400 font-medium uppercase tracking-widest text-center">Yapay Zeka Hazır <br> <span id="keyStatus" class="text-[10px] text-emerald-500 font-bold italic"></span></p>
                     </div>
                 </div>
             </div>
@@ -118,9 +119,7 @@
                 </div>
 
                 <div class="overflow-x-auto custom-scrollbar">
-                    <table id="dataTable" class="w-full text-left border-collapse min-w-[800px]">
-                        <!-- JS content -->
-                    </table>
+                    <table id="dataTable" class="w-full text-left border-collapse min-w-[800px]"></table>
                 </div>
                 
                 <div class="p-6 bg-slate-50/50 border-t border-slate-100 text-center">
@@ -130,7 +129,7 @@
         </div>
     </div>
 
-    <!-- Enhanced Modal -->
+    <!-- Download Modal -->
     <div id="downloadModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md hidden flex items-center justify-center z-50 p-6 animate-in fade-in duration-200">
         <div class="bg-white rounded-[2.5rem] p-10 max-w-lg w-full shadow-2xl transform transition-all animate-in zoom-in-95 duration-300">
             <div class="text-center mb-10">
@@ -153,13 +152,32 @@
                     <span class="text-[10px] text-red-600 font-bold tracking-wider mt-1">.PDF</span>
                 </button>
             </div>
-            
-            <button id="closeModal" class="mt-8 w-full py-4 text-slate-400 font-semibold hover:text-slate-600 transition-colors">Şimdi Değil</button>
+            <button id="closeModal" class="mt-8 w-full py-4 text-slate-400 font-semibold hover:text-slate-600 transition-colors">Vazgeç</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md hidden flex items-center justify-center z-[60] p-6">
+        <div class="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl">
+            <h3 class="text-2xl font-bold text-slate-900 mb-4">Ayarlar</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Gemini API Anahtarı</label>
+                    <input type="password" id="apiKeyInput" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-200 outline-none transition-all" placeholder="API Key girin...">
+                    <p class="text-[10px] text-slate-400 mt-2">Varsayılan anahtar koda eklenmiştir. Değiştirmek isterseniz burayı kullanabilirsiniz.</p>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-8">
+                <button id="saveSettings" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all">Kaydet</button>
+                <button id="closeSettings" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition-all">Kapat</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const apiKey = ""; 
+        // API KEY EKLENDİ
+        const hardcodedApiKey = "AIzaSyAgMc_wkS4bprQl3Nv45wz_PSpbx3knfTw"; 
+        
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const previewContainer = document.getElementById('previewContainer');
@@ -173,196 +191,144 @@
         const downloadModalBtn = document.getElementById('downloadModalBtn');
         const actionHeader = document.getElementById('actionHeader');
         const resetBtn = document.getElementById('resetBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const apiKeyInput = document.getElementById('apiKeyInput');
 
         let base64Image = "";
 
-        // UI Helpers
+        function getActiveKey() {
+            return localStorage.getItem('GEMINI_API_KEY') || hardcodedApiKey || "";
+        }
+
+        function checkKeyStatus() {
+            const currentKey = getActiveKey();
+            const statusEl = document.getElementById('keyStatus');
+            statusEl.innerText = currentKey ? "ANAHTAR AKTİF" : "ANAHTAR GEREKLİ";
+        }
+
+        window.onload = checkKeyStatus;
+
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
-            toast.className = `p-4 rounded-2xl shadow-xl flex items-center gap-3 border ${type === 'success' ? 'bg-white border-emerald-100 text-emerald-800' : 'bg-white border-red-100 text-red-800'} animate-in slide-in-from-right duration-300`;
-            toast.innerHTML = `
-                <div class="w-2 h-2 rounded-full ${type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}"></div>
-                <span class="font-semibold text-sm">${message}</span>
-            `;
+            toast.className = `p-4 rounded-2xl shadow-xl flex items-center gap-3 border ${type === 'success' ? 'bg-white border-emerald-100 text-emerald-800' : 'bg-white border-red-100 text-red-800'}`;
+            toast.innerHTML = `<div class="w-2 h-2 rounded-full ${type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}"></div><span class="font-semibold text-sm">${message}</span>`;
             document.getElementById('toastContainer').appendChild(toast);
-            setTimeout(() => toast.classList.add('opacity-0', 'transition-opacity'), 2500);
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // File Handling
-        dropZone.addEventListener('click', () => fileInput.click());
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drop-zone--over'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drop-zone--over'));
-        dropZone.addEventListener('drop', (e) => {
+        // Settings
+        document.getElementById('openSettingsBtn').onclick = () => settingsModal.classList.remove('hidden');
+        document.getElementById('closeSettings').onclick = () => settingsModal.classList.add('hidden');
+        document.getElementById('saveSettings').onclick = () => {
+            localStorage.setItem('GEMINI_API_KEY', apiKeyInput.value.trim());
+            showToast("Ayarlar kaydedildi.");
+            checkKeyStatus();
+            settingsModal.classList.add('hidden');
+        };
+        apiKeyInput.value = localStorage.getItem('GEMINI_API_KEY') || "";
+
+        // File Handlers
+        dropZone.onclick = () => fileInput.click();
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('drop-zone--over'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('drop-zone--over');
+        dropZone.ondrop = (e) => {
             e.preventDefault();
             dropZone.classList.remove('drop-zone--over');
             if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-        });
+        };
 
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) handleFile(e.target.files[0]);
-        });
+        fileInput.onchange = (e) => { if (e.target.files.length) handleFile(e.target.files[0]); };
 
         function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
-                showToast("Lütfen geçerli bir görsel dosyası seçin.", "error");
-                return;
-            }
             const reader = new FileReader();
             reader.onload = (e) => {
                 imagePreview.src = e.target.result;
                 base64Image = e.target.result.split(',')[1];
                 dropZone.classList.add('hidden');
                 previewContainer.classList.remove('hidden');
-                showToast("Görsel yüklendi.");
             };
             reader.readAsDataURL(file);
         }
 
         // AI Logic
-        processBtn.addEventListener('click', async () => {
+        processBtn.onclick = async () => {
+            const currentKey = getActiveKey();
+            if (!currentKey) return showToast("API Key eksik!", "error");
             if (!base64Image) return;
 
             uploadWrapper.classList.add('hidden');
             loadingState.classList.remove('hidden');
 
-            const systemPrompt = `Analyze the provided image which contains a table. 
-            Extract ALL visible data into a clean JSON array of objects. 
-            - Identify table headers. If no headers exist, use "Sütun 1", "Sütun 2" etc.
-            - Ensure every row is captured accurately.
-            - Provide ONLY the JSON array as output, no extra text or markdown blocks.
-            - Language should be Turkish for generic keys if needed.`;
+            const prompt = "Analyze the provided image which contains a table. Extract ALL visible data into a clean JSON array of objects. Identify table headers. Provide ONLY the JSON array as output, no extra text or markdown blocks. Language Turkish.";
 
             try {
-                const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${currentKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: systemPrompt },
-                                { inlineData: { mimeType: "image/png", data: base64Image } }
-                            ]
-                        }]
+                        contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: "image/png", data: base64Image } }] }]
                     })
                 });
 
                 const result = await response.json();
                 const textOutput = result.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
                 const cleanJson = textOutput.replace(/```json|```/g, "").trim();
-                
-                let data = [];
-                try {
-                    data = JSON.parse(cleanJson);
-                } catch(e) {
-                    console.error("Parse Error:", cleanJson);
-                    throw new Error("JSON ayrıştırma hatası.");
-                }
+                const data = JSON.parse(cleanJson);
 
                 renderTable(data);
                 loadingState.classList.add('hidden');
                 resultSection.classList.remove('hidden');
                 actionHeader.classList.remove('hidden');
-                showToast("Tablo başarıyla oluşturuldu!");
-
+                showToast("Analiz tamamlandı!");
             } catch (error) {
-                console.error(error);
                 loadingState.classList.add('hidden');
                 uploadWrapper.classList.remove('hidden');
-                showToast("Hata: AI görseli işleyemedi.", "error");
+                showToast("Hata oluştu!", "error");
             }
-        });
+        };
 
-        async function fetchWithRetry(url, options, retries = 5, delay = 1000) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const res = await fetch(url, options);
-                    if (res.ok) return res;
-                } catch (e) {}
-                await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
-            }
-            throw new Error("Bağlantı başarısız.");
-        }
-
-        // Table Operations
         function renderTable(data) {
-            if (!data || data.length === 0) {
-                dataTable.innerHTML = `<tr><td class="p-20 text-center text-slate-400 font-medium">Veri bulunamadı.</td></tr>`;
-                return;
-            }
-
+            if (!data.length) return;
             const headers = Object.keys(data[0]);
             updateCounts(data.length, headers.length);
 
             let html = `<thead><tr class="bg-slate-50/50">`;
-            headers.forEach(h => {
-                html += `<th class="px-6 py-5 text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">${h}</th>`;
-            });
-            html += `<th class="px-6 py-5 border-b border-slate-100 w-10"></th></tr></thead><tbody class="divide-y divide-slate-50">`;
+            headers.forEach(h => html += `<th class="px-6 py-5 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-100">${h}</th>`);
+            html += `<th class="w-10 border-b border-slate-100"></th></tr></thead><tbody class="divide-y divide-slate-50">`;
 
-            data.forEach((row, rowIndex) => {
+            data.forEach(row => {
                 html += `<tr class="group hover:bg-slate-50 transition-colors">`;
-                headers.forEach(h => {
-                    html += `<td contenteditable="true" class="px-6 py-4 text-sm font-medium text-slate-600 outline-none">${row[h] || ''}</td>`;
-                });
-                html += `<td class="px-4 py-4 text-right opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onclick="removeRow(this)" class="p-1.5 text-slate-300 hover:text-red-500 rounded-lg">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
-                </td></tr>`;
+                headers.forEach(h => html += `<td contenteditable="true" class="px-6 py-4 text-sm font-medium text-slate-600 outline-none">${row[h] || ''}</td>`);
+                html += `<td class="px-4 py-4 text-right opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="this.closest('tr').remove(); updateCountsFromUI();" class="text-slate-300 hover:text-red-500">Sil</button></td></tr>`;
             });
-            html += `</tbody>`;
-            dataTable.innerHTML = html;
+            dataTable.innerHTML = html + `</tbody>`;
         }
 
         function addRow() {
-            const table = dataTable;
-            const headerCount = table.querySelectorAll('th').length - 1;
-            const tbody = table.querySelector('tbody');
-            if (!tbody) return;
-
+            const tbody = dataTable.querySelector('tbody');
+            const colCount = dataTable.querySelectorAll('th').length - 1;
             const tr = document.createElement('tr');
             tr.className = "group hover:bg-slate-50 transition-colors";
-            for (let i = 0; i < headerCount; i++) {
-                const td = document.createElement('td');
-                td.contentEditable = "true";
-                td.className = "px-6 py-4 text-sm font-medium text-slate-600 outline-none";
-                tr.appendChild(td);
-            }
-            
-            const actionTd = document.createElement('td');
-            actionTd.className = "px-4 py-4 text-right opacity-0 group-hover:opacity-100 transition-opacity";
-            actionTd.innerHTML = `<button onclick="removeRow(this)" class="p-1.5 text-slate-300 hover:text-red-500 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>`;
-            tr.appendChild(actionTd);
-            
+            for(let i=0; i<colCount; i++) tr.innerHTML += `<td contenteditable="true" class="px-6 py-4 text-sm font-medium text-slate-600 outline-none"></td>`;
+            tr.innerHTML += `<td class="px-4 py-4 text-right opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="this.closest('tr').remove(); updateCountsFromUI();" class="text-slate-300 hover:text-red-500">Sil</button></td>`;
             tbody.appendChild(tr);
             updateCountsFromUI();
-            showToast("Yeni satır eklendi.");
         }
 
         function addColumn() {
-            const headerName = prompt("Sütun Başlığı:", `Sütun ${dataTable.querySelectorAll('th').length}`);
-            if (!headerName) return;
-
-            const theadTr = dataTable.querySelector('thead tr');
+            const name = prompt("Başlık:");
+            if (!name) return;
+            const headTr = dataTable.querySelector('thead tr');
             const th = document.createElement('th');
-            th.className = "px-6 py-5 text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100";
-            th.innerText = headerName;
-            theadTr.insertBefore(th, theadTr.lastElementChild);
-
-            const rows = dataTable.querySelectorAll('tbody tr');
-            rows.forEach(tr => {
+            th.className = headTr.querySelector('th').className;
+            th.innerText = name;
+            headTr.insertBefore(th, headTr.lastElementChild);
+            dataTable.querySelectorAll('tbody tr').forEach(tr => {
                 const td = document.createElement('td');
                 td.contentEditable = "true";
                 td.className = "px-6 py-4 text-sm font-medium text-slate-600 outline-none";
                 tr.insertBefore(td, tr.lastElementChild);
             });
-            updateCountsFromUI();
-            showToast("Yeni sütun eklendi.");
-        }
-
-        function removeRow(btn) {
-            btn.closest('tr').remove();
             updateCountsFromUI();
         }
 
@@ -372,71 +338,43 @@
         }
 
         function updateCountsFromUI() {
-            const rows = dataTable.querySelectorAll('tbody tr').length;
-            const cols = dataTable.querySelectorAll('th').length - 1;
-            updateCounts(rows, cols);
+            const r = dataTable.querySelectorAll('tbody tr').length;
+            const c = dataTable.querySelectorAll('th').length - 1;
+            updateCounts(r, c);
         }
 
-        // Export Actions
-        downloadModalBtn.addEventListener('click', () => downloadModal.classList.remove('hidden'));
-        document.getElementById('closeModal').addEventListener('click', () => downloadModal.classList.add('hidden'));
+        // Export
+        downloadModalBtn.onclick = () => downloadModal.classList.remove('hidden');
+        document.getElementById('closeModal').onclick = () => downloadModal.classList.add('hidden');
 
-        document.getElementById('exportExcel').addEventListener('click', () => {
-            const currentData = getTableDataFromUI();
-            const worksheet = XLSX.utils.json_to_sheet(currentData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "AI_Export");
-            XLSX.writeFile(workbook, "ai_tablo_export.xlsx");
+        document.getElementById('exportExcel').onclick = () => {
+            const data = getTableData();
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "AI_Export");
+            XLSX.writeFile(wb, "tablo.xlsx");
             downloadModal.classList.add('hidden');
-            showToast("Excel dosyası indirildi.");
-        });
+        };
 
-        document.getElementById('exportPDF').addEventListener('click', () => {
+        document.getElementById('exportPDF').onclick = () => {
+            const data = getTableData();
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const currentData = getTableDataFromUI();
-            
-            if (currentData.length > 0) {
-                const headers = [Object.keys(currentData[0])];
-                const rows = currentData.map(obj => Object.values(obj));
-                
-                doc.setFont("helvetica", "bold");
-                doc.text("AI TABLE MASTER - RAPOR", 14, 15);
-                doc.setFontSize(10);
-                doc.setFont("helvetica", "normal");
-                doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 14, 22);
-
-                doc.autoTable({
-                    head: headers,
-                    body: rows,
-                    startY: 30,
-                    theme: 'striped',
-                    headStyles: { fillColor: [99, 102, 241], textColor: 255 },
-                    styles: { fontSize: 8, font: 'helvetica' }
-                });
-                doc.save("ai_tablo_export.pdf");
-            }
+            const doc = new jsPDF();
+            doc.autoTable({ head: [Object.keys(data[0])], body: data.map(o => Object.values(o)) });
+            doc.save("tablo.pdf");
             downloadModal.classList.add('hidden');
-            showToast("PDF dosyası indirildi.");
-        });
+        };
 
-        function getTableDataFromUI() {
+        function getTableData() {
             const headers = Array.from(dataTable.querySelectorAll('th')).slice(0, -1).map(th => th.innerText);
-            const rows = Array.from(dataTable.querySelectorAll('tbody tr'));
-            
-            return rows.map(tr => {
-                const cells = Array.from(tr.querySelectorAll('td')).slice(0, -1);
+            return Array.from(dataTable.querySelectorAll('tbody tr')).map(tr => {
                 const obj = {};
-                headers.forEach((h, i) => {
-                    obj[h] = cells[i].innerText;
-                });
+                Array.from(tr.querySelectorAll('td')).slice(0, -1).forEach((td, i) => obj[headers[i]] = td.innerText);
                 return obj;
             });
         }
 
-        resetBtn.addEventListener('click', () => {
-            location.reload();
-        });
+        resetBtn.onclick = () => location.reload();
     </script>
 </body>
 </html>
